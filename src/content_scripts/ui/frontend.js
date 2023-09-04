@@ -621,13 +621,13 @@ const Front = (function() {
 
     window.addEventListener('message', function(event) {
         var _message = event.data && event.data.surfingkeys_data;
-        if (_callbacks[_message.id]) {
+        if (_callbacks[_message?.id]) {
             var f = _callbacks[_message.id];
             // returns true to make callback stay for coming response.
             if (!f(_message)) {
                 delete _callbacks[_message.id];
             }
-        } else if (_message.action && _actions.hasOwnProperty(_message.action)) {
+        } else if (_message?.action && _actions.hasOwnProperty(_message.action)) {
             var ret = _actions[_message.action](_message);
             if (_message.ack) {
                 top.postMessage({surfingkeys_data: {

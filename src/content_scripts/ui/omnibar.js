@@ -1008,7 +1008,7 @@ function OpenTabs(omnibar) {
         omnibar.cachedPromise = new Promise(function(resolve, reject) {
             queryInfo.tabsThreshold = Math.min(runtime.conf.tabsThreshold, Math.ceil(window.innerWidth / 26));
             RUNTIME('getTabs', queryInfo, function(response) {
-                resolve(response.tabs);
+                resolve(response?.tabs);
             });
         });
     };

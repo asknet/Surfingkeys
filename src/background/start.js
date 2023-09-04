@@ -922,6 +922,12 @@ function start(browser) {
         });
     };
 
+    self.closeSelectedTabs = function(message, sender, sendResponse) {
+        if (message?.tabIds) {
+            chrome.tabs.remove(message.tabIds);
+        }
+    };
+
     self.closeAudibleTab = function(message, sender, sendResponse) {
         chrome.tabs.query({audible: true}, function(tabs) {
             if (tabs) {

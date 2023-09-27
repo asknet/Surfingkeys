@@ -1687,6 +1687,43 @@ function start(browser) {
             });
         }
     };
+    self.getSfHost= function(message, sender, sendResponse) {
+
+        chrome.cookies.get({url: message.url, name: "sid", storeId: sender.tab.cookieStoreId}, cookie => {
+            if (!cookie) {
+                sendResponse(null);
+                return;
+            }
+            let [orgId] = cookie.value.split("!");
+            chrome.cookies.getAll({name: "sid", domain: "salesforce.com", secure: true, storeId: sender.tab.cookieStoreId}, cookies => {
+                let sessionCookie = cookies.find(c => c.value.startsWith(orgId + "!"));
+                if (sessionCookie) {
+                    console.log('sf domain:' + sessionCookie.domain);
+                    _response(message, sendResponse, sessionCookie.domain);
+                } else {
+                    chrome.cookies.getAll({name: "sid", domain: "cloudforce.com", secure: true, storeId: sender.tab.cookieStoreId}, cookies => {
+                        sessionCookie = cookies.find(c => c.value.startsWith(orgId + "!"));
+                        if (sessionCookie) {
+                            _response(message, sendResponse, sessionCookie.domain);
+                        } else {
+                            sendResponse(null);
+                        }
+                    });
+                }
+            });
+        });
+    };
+    self.getSfSession= function(message, sender, sendResponse) {
+
+        chrome.cookies.get({url: "https://" + message.sfHost, name: "sid", storeId: sender.tab.cookieStoreId}, sessionCookie => {
+            if (!sessionCookie) {
+                sendResponse(null);
+                return;
+            }
+            let session = {key: sessionCookie.value, hostname: sessionCookie.domain};
+            _response(message, sendResponse, session);
+        });
+    };
 }
 
 export {

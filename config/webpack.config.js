@@ -128,6 +128,7 @@ module.exports = (env, argv) => {
                     { from: 'node_modules/ace-builds/src-noconflict/worker-javascript.js', to: 'pages' },
                     { from: 'src/icons', to: 'icons' },
                     { from: 'src/content_scripts/content.css', to: 'content.css' },
+                    { from: 'src/content_scripts/jsforce.min.js', to: 'jsforce.min.js' },
                     {
                         from: "src/manifest.json",
                         to:   ".",

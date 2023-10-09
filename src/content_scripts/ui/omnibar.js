@@ -1043,7 +1043,7 @@ function OpenTabs(omnibar) {
         else if (args && args.action === "prefilter" && args.tabquery ) {
             self.prompt = `Pre filtered tabs${separatorHtml}`;
             self.onEnter = omnibar.openFocused.bind(self);
-            queryInfo = {queryInfo: args.tabquery};
+            getTabsArgs = {queryInfo: args.tabquery};
         } else {
             self.prompt = `tabs${separatorHtml}`;
             self.onEnter = omnibar.openFocused.bind(self);

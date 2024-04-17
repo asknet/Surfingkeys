@@ -29,7 +29,7 @@ function createHints(insert, normal) {
 div {
     position: absolute;
     display: block;
-    font-size: 8pt;
+    font-size: 9pt;
     font-weight: bold;
     padding: 0px 2px 0px 2px;
     background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#FFF785), color-stop(100%,#FFC542));

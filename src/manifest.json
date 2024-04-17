@@ -52,6 +52,7 @@
         "https://*.salesforce.com/*",
         "https://*.force.com/*",
         "https://*.cloudforce.com/*",
+        "https://*.salesforce-setup.com/*",
         "https://*.visualforce.com/*"
     ],
     "background": {
@@ -79,6 +80,7 @@
                 "https://*.salesforce.com/*",
                 "https://*.force.com/*",
                 "https://*.cloudforce.com/*",
+                "https://*.salesforce-setup.com/*",
                 "https://*.visualforce.com/*"
             ],
             "js": [

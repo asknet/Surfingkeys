@@ -1720,8 +1720,44 @@ function start(browser) {
             _response(message, sendResponse, session);
         });
     };
-}
 
+    self.getSfUserInfo = function(message, sender, sendResponse) {
+        const session = message;
+
+        const xhr = new XMLHttpRequest();
+        const url = `https://login.salesforce.com/services/oauth2/userinfo`;
+
+        xhr.open("GET", url, true);
+
+        // Set the authorization header with the Bearer token
+        xhr.setRequestHeader("Authorization", `Bearer ${session.key}`);
+        xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+
+        // Define what happens on successful data submission
+        xhr.onload = function() {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    const data = JSON.parse(xhr.responseText);
+                    console.log('data' + data);
+                    _response(message, sendResponse, data); // Pass data back to the response handler
+                } catch (e) {
+                    _response(message, sendResponse, { error: `Error parsing response JSON: ${e}` });
+                }
+            } else {
+                _response(message, sendResponse, { error: `Request failed with status: ${xhr.status} - ${xhr.statusText}` });
+            }
+        };
+
+        // Define what happens in case of an error
+        xhr.onerror = function() {
+            _response(message, sendResponse, { error: "Network error occurred during the request." });
+        };
+
+        // Send the request
+        xhr.send();
+    };
+
+}
 export {
     _save,
     dictFromArray,

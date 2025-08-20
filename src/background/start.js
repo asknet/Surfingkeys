@@ -1993,38 +1993,36 @@ function start(browser) {
 
     self.getSfUserInfo = function(message, sender, sendResponse) {
         const session = message;
-
-        const xhr = new XMLHttpRequest();
         const url = `https://${session.hostname}/services/oauth2/userinfo`;
 
-        xhr.open("GET", url, true);
+        const headers = {
+            "Authorization": `Bearer ${session.key}`,
+            "Content-Type": "application/json; charset=UTF-8"
+        };
 
-        // Set the authorization header with the Bearer token
-        xhr.setRequestHeader("Authorization", `Bearer ${session.key}`);
-        xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
-
-        // Define what happens on successful data submission
-        xhr.onload = function() {
-            if (xhr.status >= 200 && xhr.status < 300) {
+        request(
+            url, 
+            // onReady callback
+            (content) => {
                 try {
-                    const data = JSON.parse(xhr.responseText);
-                    console.log('data' + data);
-                    _response(message, sendResponse, data); // Pass data back to the response handler
+                    const data = JSON.parse(content);
+                    // console.log('data', data);
+                    _response(message, sendResponse, data);
                 } catch (e) {
                     _response(message, sendResponse, { error: `Error parsing response JSON: ${e}` });
                 }
-            } else {
-                _response(message, sendResponse, { error: `Request failed with status: ${xhr.status} - ${xhr.statusText}` });
+            },
+            // headers
+            headers,
+            // data (undefined for GET request)
+            undefined,
+            // onException callback
+            (error) => {
+                _response(message, sendResponse, { 
+                    error: `Request failed: ${error.message || 'Unknown error'}` 
+                });
             }
-        };
-
-        // Define what happens in case of an error
-        xhr.onerror = function() {
-            _response(message, sendResponse, { error: "Network error occurred during the request." });
-        };
-
-        // Send the request
-        xhr.send();
+        );
     };
 
     //Register jsforce

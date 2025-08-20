@@ -1001,6 +1001,12 @@ function start(browser) {
         });
     };
 
+    self.closeSelectedTabs = function(message, sender, sendResponse) {
+        if (message?.tabIds) {
+            chrome.tabs.remove(message.tabIds);
+        }
+    };
+
     self.closeAudibleTab = function(message, sender, sendResponse) {
         chrome.tabs.query({audible: true}, function(tabs) {
             if (tabs) {
@@ -1947,8 +1953,81 @@ function start(browser) {
             });
         }
     };
-}
+    self.getSfHost= function(message, sender, sendResponse) {
 
+        chrome.cookies.get({url: message.url, name: "sid", storeId: sender.tab.cookieStoreId}, cookie => {
+            if (!cookie) {
+                sendResponse(null);
+                return;
+            }
+            let [orgId] = cookie.value.split("!");
+            chrome.cookies.getAll({name: "sid", domain: "salesforce.com", secure: true, storeId: sender.tab.cookieStoreId}, cookies => {
+                let sessionCookie = cookies.find(c => c.value.startsWith(orgId + "!"));
+                if (sessionCookie) {
+                    console.log('sf domain:' + sessionCookie.domain);
+                    _response(message, sendResponse, sessionCookie.domain);
+                } else {
+                    chrome.cookies.getAll({name: "sid", domain: "cloudforce.com", secure: true, storeId: sender.tab.cookieStoreId}, cookies => {
+                        sessionCookie = cookies.find(c => c.value.startsWith(orgId + "!"));
+                        if (sessionCookie) {
+                            _response(message, sendResponse, sessionCookie.domain);
+                        } else {
+                            sendResponse(null);
+                        }
+                    });
+                }
+            });
+        });
+    };
+    self.getSfSession= function(message, sender, sendResponse) {
+
+        chrome.cookies.get({url: "https://" + message.sfHost, name: "sid", storeId: sender.tab.cookieStoreId}, sessionCookie => {
+            if (!sessionCookie) {
+                sendResponse(null);
+                return;
+            }
+            let session = {key: sessionCookie.value, hostname: sessionCookie.domain};
+            _response(message, sendResponse, session);
+        });
+    };
+
+    self.getSfUserInfo = function(message, sender, sendResponse) {
+        const session = message;
+
+        const xhr = new XMLHttpRequest();
+        const url = `https://${session.hostname}/services/oauth2/userinfo`;
+
+        xhr.open("GET", url, true);
+
+        // Set the authorization header with the Bearer token
+        xhr.setRequestHeader("Authorization", `Bearer ${session.key}`);
+        xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+
+        // Define what happens on successful data submission
+        xhr.onload = function() {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    const data = JSON.parse(xhr.responseText);
+                    console.log('data' + data);
+                    _response(message, sendResponse, data); // Pass data back to the response handler
+                } catch (e) {
+                    _response(message, sendResponse, { error: `Error parsing response JSON: ${e}` });
+                }
+            } else {
+                _response(message, sendResponse, { error: `Request failed with status: ${xhr.status} - ${xhr.statusText}` });
+            }
+        };
+
+        // Define what happens in case of an error
+        xhr.onerror = function() {
+            _response(message, sendResponse, { error: "Network error occurred during the request." });
+        };
+
+        // Send the request
+        xhr.send();
+    };
+
+}
 export {
     _save,
     dictFromArray,

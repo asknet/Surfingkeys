@@ -42,10 +42,18 @@
         "scripting",
         "storage",
         "sessions",
+        "cookies",
         "downloads",
         "topSites",
         "clipboardRead",
         "clipboardWrite"
+    ],
+    "host_permissions": [
+        "https://*.salesforce.com/*",
+        "https://*.force.com/*",
+        "https://*.cloudforce.com/*",
+        "https://*.salesforce-setup.com/*",
+        "https://*.visualforce.com/*"
     ],
     "background": {
         "scripts": [
@@ -63,6 +71,20 @@
             ],
             "css": [
                 "content.css"
+            ],
+            "run_at": "document_start",
+            "all_frames": true
+        },
+        {
+            "matches": [
+                "https://*.salesforce.com/*",
+                "https://*.force.com/*",
+                "https://*.cloudforce.com/*",
+                "https://*.salesforce-setup.com/*",
+                "https://*.visualforce.com/*"
+            ],
+            "js": [
+                "jsforce.min.js"
             ],
             "run_at": "document_start",
             "all_frames": true

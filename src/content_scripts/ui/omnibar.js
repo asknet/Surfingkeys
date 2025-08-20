@@ -1065,7 +1065,7 @@ function OpenTabs(omnibar) {
         omnibar.cachedPromise = new Promise(function(resolve, reject) {
             getTabsArgs.tabsThreshold = Math.min(runtime.conf.tabsThreshold, Math.ceil(window.innerWidth / 26));
             RUNTIME('getTabs', getTabsArgs, function(response) {
-                resolve(response.tabs);
+                resolve(response?.tabs);
             });
         });
     };
@@ -1079,6 +1079,11 @@ function OpenTabs(omnibar) {
                 return true;
             };
             getTabsArgs = {queryInfo: {currentWindow: false}};
+        }
+        else if (args && args.action === "prefilter" && args.tabquery ) {
+            self.prompt = `Pre filtered tabs${separatorHtml}`;
+            self.onEnter = omnibar.openFocused.bind(self);
+            getTabsArgs = {queryInfo: args.tabquery};
         } else {
             self.prompt = `tabs${separatorHtml}`;
             self.onEnter = omnibar.openFocused.bind(self);

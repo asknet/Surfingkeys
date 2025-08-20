@@ -47,6 +47,7 @@ function modifyManifest(browser, mode, buffer) {
                 "resources": [
                     "_favicon/*",
                     "api.js",
+                    "jsforce.min.js",
                     "pages/neovim.html",
                     "pages/default.js",
                     "pages/emoji.tsv",

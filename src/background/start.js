@@ -2026,31 +2026,33 @@ function start(browser) {
     };
 
     //Register jsforce
-    const jsforceScriptId = "jsforceUserScript";
-    chrome.userScripts.getScripts({ ids: [jsforceScriptId] }, (r) => {
+    if (isUserScriptsAvailable()) {
 
-        const registerSettingSnippets = () => {
-            chrome.userScripts.register([{
-                allFrames: true,
-                id: jsforceScriptId,
-                matches: [ "https://*.salesforce.com/*",
-                    "https://*.force.com/*",
-                    "https://*.cloudforce.com/*",
-                    "https://*.salesforce-setup.com/*",
-                    "https://*.visualforce.com/*"
-                ],
-                js: [{file: "jsforce.min.js"}]
-            }]);
-        };
-        if (r.length > 0) {
-            // if (r[0].js[0].code !== code) {
-            //     chrome.userScripts.unregister({ids:[userScriptId]}, registerSettingSnippets);
-            // }
-        } else {
-            registerSettingSnippets();
-        }
+        const jsforceScriptId = "jsforceUserScript";
+        chrome.userScripts.getScripts({ ids: [jsforceScriptId] }, (r) => {
 
-    });
+            const registerSettingSnippets = () => {
+                chrome.userScripts.register([{
+                    allFrames: true,
+                    id: jsforceScriptId,
+                    matches: [ "https://*.salesforce.com/*",
+                        "https://*.force.com/*",
+                        "https://*.cloudforce.com/*",
+                        "https://*.salesforce-setup.com/*",
+                        "https://*.visualforce.com/*"
+                    ],
+                    js: [{file: "jsforce.min.js"}]
+                }]);
+            };
+            if (r.length > 0) {
+                // if (r[0].js[0].code !== code) {
+                //     chrome.userScripts.unregister({ids:[userScriptId]}, registerSettingSnippets);
+                // }
+            } else {
+                registerSettingSnippets();
+            }
+        });
+    }
 
 }
 export {

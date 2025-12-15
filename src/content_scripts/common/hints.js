@@ -442,7 +442,7 @@ div.hint-scrollable {
                     elm[0] = "__EVENT_TARGET__";
                     dispatchSKEvent('user', ["onHintClicked", elm], target);
                 } else {
-                    dispatchSKEvent('user', ["onHintClicked"], elm);
+                    dispatchSKEvent('user', ["onHintClicked", shiftKey], elm);
                 }
             }
             if (behaviours.multipleHits) {
@@ -489,6 +489,10 @@ div.hint-scrollable {
         behaviours = {
             mouseEvents: MOUSE_EVENTS
         };
+        // Clean up temporary class added for array-based hint creation
+        document.querySelectorAll('.surfingkeys--hints--creating').forEach(function(el) {
+            el.classList.remove('surfingkeys--hints--creating');
+        });
         setSanitizedContent(holder, "");
         holder.remove();
         hintsHost.remove();
@@ -962,7 +966,7 @@ div.hint-scrollable {
      * @param {function} onHintKey a callback function on hint keys pressed.
      * @param {object} [attrs=null] `active`: whether to activate the new tab when a link is opened, `tabbed`: whether to open a link in a new tab, `multipleHits`: whether to stay in hints mode after one hint is triggered.
      * @name Hints.create
-     * @returns {boolean} whether any hint is created for target elements.
+     * @returns {Promise} which will be resolved how many hints are created.
      * @see Hints.dispatchMouseClick
      *
      * @example
@@ -990,7 +994,11 @@ div.hint-scrollable {
         } else {
             handleHint();
         }
-        return found > 0;
+        dispatchSKEvent('user', ["onHintCreated", found]);
+        const promise = new Promise((resolve, reject) => {
+            resolve(found);
+        });
+        return promise;
     };
 
     self.mouseoutLastElement = function() {

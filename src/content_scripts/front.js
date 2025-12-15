@@ -96,6 +96,12 @@ function createFront(insert, normal, hints, visual, browser) {
             alias: alias
         });
     };
+    self.setHintsCharacters = function (chars) {
+        applyUICommand({
+            action: 'setHintsCharacters',
+            characters: chars
+        });
+    };
 
     var _actions = {};
     var skCallbacks = {};
@@ -439,12 +445,28 @@ function createFront(insert, normal, hints, visual, browser) {
         });
     };
 
+    let onDialogResponseOk = null;
+    _actions["dialogResponse"] = function (message) {
+        if (message.result === "Ok" && onDialogResponseOk) {
+            onDialogResponseOk();
+        } else {
+            onDialogResponseOk = null;
+        }
+    };
+
     skCallbacks = initSKFunctionListener("front", {
         showPopup: (content) => {
             self.command({
                 action: 'showPopup',
-                content: content
+                content
             });
+        },
+        showDialog: (question, onOk) => {
+            self.command({
+                action: 'showDialog',
+                question
+            });
+            onDialogResponseOk = onOk;
         },
         applySettingsFromSnippets: (us) => {
             applyUICommand({
@@ -492,6 +514,13 @@ function createFront(insert, normal, hints, visual, browser) {
             applyUICommand({
                 action: 'addVimKeyMap',
                 vimKeyMap
+            });
+        },
+        addCommand: (name, description) => {
+            applyUICommand({
+                action: 'addCommand',
+                name: name,
+                description: description
             });
         },
         highlightElement,
@@ -659,6 +688,10 @@ function createFront(insert, normal, hints, visual, browser) {
 
     _actions["emptySelection"] = function(message) {
         visual.emptySelection();
+    };
+
+    _actions["executeUserCommand"] = function(message) {
+        dispatchSKEvent('user', ['executeUserCommand', message.name, message.args]);
     };
 
     var _active = window === top;

@@ -50,6 +50,12 @@ function vmapkey(keys, annotation, jscode, options) {
    }
 }
 
+const userDefinedCommands = {};
+function addCommand(name, description, action) {
+    userDefinedCommands[name] = action;
+    dispatchSKEvent('front', ['addCommand', name, description]);
+}
+
 function map(new_keystroke, old_keystroke, domain, new_annotation) {
     dispatchSKEvent('api', ['map', new_keystroke, old_keystroke, domain, new_annotation]);
 }
@@ -70,10 +76,16 @@ let hintsFunction;
 let onClipboardReadFn;
 let onEditorWriteFn;
 let userScriptTask = () => {};
+let hintsCreationResolve;
 initSKFunctionListener("user", {
     callUserFunction: (keys, para) => {
         if (userDefinedFunctions.hasOwnProperty(keys)) {
             userDefinedFunctions[keys](para);
+        }
+    },
+    executeUserCommand: (name, args) => {
+        if (userDefinedCommands.hasOwnProperty(name)) {
+            userDefinedCommands[name](...args);
         }
     },
     getSearchSuggestions: (url, response, request, callbackId, origin) => {
@@ -104,9 +116,15 @@ initSKFunctionListener("user", {
     onEditorWrite: (data) => {
         onEditorWriteFn(data);
     },
-    onHintClicked: (element) => {
+    onHintClicked: (shiftKey, element) => {
         if (typeof(hintsFunction) === 'function') {
-            hintsFunction(element);
+            hintsFunction(element, shiftKey);
+        }
+    },
+    onHintCreated: (found) => {
+        if (hintsCreationResolve) {
+            hintsCreationResolve(found);
+            hintsCreationResolve = null;
         }
     },
 }, true);
@@ -138,6 +156,7 @@ const api = {
     aceVimMap,
     addVimMapKey,
     addSearchAlias,
+    addCommand,
     cmap,
     imap,
     imapkey,
@@ -192,8 +211,19 @@ const api = {
             dispatchSKEvent('api', ['hints:click', links, force]);
         },
         create: (cssSelector, onHintKey, attrs) => {
+            if (typeof(cssSelector) !== 'string') {
+                const hintsCreating = "surfingkeys--hints--creating";
+                if (createCssSelectorForElements(hintsCreating, cssSelector) === 0) {
+                    return false;
+                }
+                cssSelector = `.${hintsCreating}`;
+            }
             hintsFunction = onHintKey;
+            const promise = new Promise((resolve, reject) => {
+                hintsCreationResolve = resolve;
+            });
             dispatchSKEvent('api', ['hints:create', cssSelector, "user", attrs]);
+            return promise;
         },
         dispatchMouseClick: (element) => {
             dispatchSKEvent('hints', ['dispatchMouseClick'], element);
